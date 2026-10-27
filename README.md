@@ -89,7 +89,10 @@ Each run starts Dolphin with a fresh, empty user folder, so your everyday settin
 
 - single-core emulation and a fixed real-time clock, for determinism;
 - cheats off, unlimited emulation speed, no pause on focus loss, no analytics prompt;
-- internal resolution 1x, as the research brief recommends.
+- internal resolution 1x, as the research brief recommends;
+- the `Scripting` log category on, so the rig script's Python errors reach `dolphin.log`.
+
+On Linux it also runs Dolphin through X11 (`QT_QPA_PLATFORM=xcb`) even on a Wayland desktop: under native Wayland, Dolphin's video backends hang while booting, before the first frame.
 
 `--repeat N` replays N times and fails unless every trace and screenshot is identical. Run it whenever the rig, the Dolphin build or the settings change.
 
@@ -111,14 +114,18 @@ python3 -m unittest discover -s tests
 
 The tests drive the launcher end to end against `tests/fake_dolphin.py`, a stand-in that provides the same `dolphin` module and command line over a made-up "game". CI runs them on GitHub-hosted runners; nothing in CI touches the disc or Dolphin.
 
-## Not yet verified on a real Dolphin
+## Checked on a real Dolphin
 
-These come from the scripting fork's published API stubs and Dolphin's source, and the first real run checks them:
+The owner's first smoke test on the Linux build (`scripting-preview4`, 2026-10-27) confirmed:
 
-- that `--script` runs in `--batch` mode and its callbacks fire from the first frame;
-- the pixel layout that `on_framedrawn` passes (the rig accepts RGB or RGBA);
-- that `controller.set_gc_buttons` fully overrides port 1 every frame;
-- that the settings above make two runs from boot identical.
+- that `--script` runs in `--batch` mode and its frame callback fires every frame;
+- that the settings above make two runs from boot identical;
+- that the fork can't unregister a callback: it rejects `None`, so the rig's callbacks stay registered and do nothing once a run is over.
+
+Still to check, from the fork's API stubs and Dolphin's source:
+
+- the pixel layout that `on_framedrawn` passes (the rig accepts RGB or RGBA), by looking at a screenshot;
+- that `controller.set_gc_buttons` fully overrides port 1 every frame, with an input script that presses buttons.
 
 ## Licence
 
