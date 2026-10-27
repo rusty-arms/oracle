@@ -17,6 +17,7 @@ import argparse
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -101,6 +102,9 @@ def run_once(args: argparse.Namespace, out_dir: str, shots_dir: str) -> dict[str
             process = subprocess.Popen(command, env=env, stdout=log, stderr=subprocess.STDOUT)
             try:
                 result = _wait(process, os.path.join(out_dir, RESULT), args.timeout)
+            except RunError as exc:
+                _stop(process)
+                raise RunError(f"{exc}\nLast lines of {log_path}:\n{_tail(log_path)}") from None
             finally:
                 _stop(process)
         result["seconds"] = round(time.time() - started, 1)
@@ -115,9 +119,29 @@ def _wait(process: subprocess.Popen[bytes], result_path: str, timeout: float) ->
             with open(result_path, encoding="utf-8") as handle:
                 return json.load(handle)
         if process.poll() is not None:
-            raise RunError(f"Dolphin exited with code {process.returncode} before the run finished")
+            raise RunError(f"Dolphin {_describe_exit(process.returncode)} before the run finished")
         time.sleep(0.5)
     raise RunError(f"the run did not finish within {timeout:g} seconds")
+
+
+def _describe_exit(code: int) -> str:
+    if code < 0:
+        try:
+            name = signal.Signals(-code).name
+        except ValueError:
+            name = f"signal {-code}"
+        return f"crashed ({name}, exit code {code})"
+    return f"exited with code {code}"
+
+
+def _tail(path: str, lines: int = 20) -> str:
+    try:
+        with open(path, "rb") as handle:
+            text = handle.read().decode("utf-8", "replace")
+    except OSError:
+        return "  (no log)"
+    last = text.splitlines()[-lines:]
+    return "\n".join("  " + line for line in last) if last else "  (empty)"
 
 
 def _stop(process: subprocess.Popen[bytes]) -> None:

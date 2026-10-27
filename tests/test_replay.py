@@ -121,6 +121,13 @@ class ReplayTest(unittest.TestCase):
         code, _, err = self.run_replay("frames 50\n", mode="crash")
         self.assertEqual(code, 1)
         self.assertIn("exited with code 3", err)
+        self.assertIn("Last lines of", err)
+
+    def test_crash_names_the_signal_and_shows_the_log(self):
+        code, _, err = self.run_replay("frames 50\n", mode="trap")
+        self.assertEqual(code, 1)
+        self.assertIn("crashed (SIGILL, exit code -4)", err)
+        self.assertIn("fake dolphin: about to trap", err)
 
     def test_timeout(self):
         code, _, err = self.run_replay("frames 5\n", "--timeout", "1", mode="hang")
