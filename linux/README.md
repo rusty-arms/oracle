@@ -15,13 +15,14 @@ The script:
 
 1. installs Dolphin's build dependencies with `apt` (it asks for your password);
 2. clones the fork at the `scripting-preview4` tag, with its submodules, into `~/Develop/rusty-arms/dolphin-scripting/src`;
-3. builds it into `~/Develop/rusty-arms/dolphin-scripting/build`.
+3. builds it into `~/Develop/rusty-arms/dolphin-scripting/build`;
+4. links Dolphin's `Sys` data folder next to the binary, where this kind of build looks for it.
 
 The first build takes roughly 30 to 60 minutes. To build another release, set `TAG`, for example `TAG=scripting-preview5 linux/build-dolphin.sh`.
 
 The build installs nothing system-wide apart from the `apt` packages, and leaves any Dolphin you already have alone. Keep it outside the lab: it holds no game data.
 
-**Untested:** nobody publishes a Linux build of this fork, and this script hasn't been run yet. If the build fails, send the last 50 lines of its output, which hold no game data, and it will be fixed. If it can't be made to work, [`vm/`](../vm/README.md) runs the Windows build in a local VM instead, more slowly.
+**First tried on the owner's Pop!_OS PC on 2026-10-27:** the build worked, but the script then lacked step 4, so Dolphin crashed at start; step 4 fixes that. Nobody else publishes a Linux build of this fork. If the build fails, send the last 50 lines of its output, which hold no game data, and it will be fixed. If it can't be made to work, [`vm/`](../vm/README.md) runs the Windows build in a local VM instead, more slowly.
 
 ## Check it
 

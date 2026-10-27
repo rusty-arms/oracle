@@ -33,6 +33,10 @@ cmake -S "$DEST/src" -B "$DEST/build" -G Ninja \
   -DCMAKE_BUILD_TYPE=Release -DLINUX_LOCAL_DEV=ON
 cmake --build "$DEST/build"
 
+# A LINUX_LOCAL_DEV build looks for its Sys data folder next to the binary, but on Linux the
+# build doesn't copy it there. Without it Dolphin can't load its icons and crashes at start.
+ln -sfn "$DEST/src/Data/Sys" "$DEST/build/Binaries/Sys"
+
 echo
 echo "Built: $DEST/build/Binaries/dolphin-emu"
 echo "Use it with: export ORACLE_DOLPHIN=$DEST/build/Binaries/dolphin-emu"
