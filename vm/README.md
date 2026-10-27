@@ -1,5 +1,7 @@
 # Windows VM for the rig
 
+**Fallback.** On a Linux lab PC, first try building the scripting Dolphin from source ([linux/](../linux/README.md)). Use this VM only if that build can't be made to work.
+
 The Python-scripting Dolphin build ships for Windows only. On a Linux lab PC, run it in a local Windows VM. [`compose.yml`](compose.yml) runs one with [dockurr/windows](https://github.com/dockur/windows) (MIT), which runs Windows under KVM inside a Docker container.
 
 The VM stays on the lab PC. Its ports listen on `127.0.0.1` only, the lab is shared into it as drive `Z:`, and nothing in it is uploaded anywhere.

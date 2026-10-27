@@ -8,14 +8,14 @@ Standard library Python only. The part that runs inside Dolphin works on Python 
 
 ## What you need
 
-- **A Dolphin build with Python scripting.** Mainline Dolphin has no scripting. The rig uses [Felk's public fork of Dolphin](https://github.com/Felk/dolphin), which adds an embedded Python interpreter and a `dolphin` module (memory, controller, events, savestates). Its "Python Scripting Preview" releases ship Windows x64 builds. On a Linux lab PC, run it in a local Windows VM: see [vm/README.md](vm/README.md).
+- **A Dolphin build with Python scripting.** Mainline Dolphin has no scripting. The rig uses [Felk's public fork of Dolphin](https://github.com/Felk/dolphin), which adds an embedded Python interpreter and a `dolphin` module (memory, controller, events, savestates). Its "Python Scripting Preview" releases ship Windows x64 builds only. On a Linux lab PC, build it from source with [linux/build-dolphin.sh](linux/README.md). If that fails, [vm/](vm/README.md) runs the Windows build in a local VM instead, more slowly.
 - Python 3.8 or later on the host, to run the launcher.
 - The disc image, verified as in core's owner checklist.
 
 ## Quick start
 
 ```sh
-export ORACLE_DOLPHIN=/path/to/Dolphin.exe      # the scripting build
+export ORACLE_DOLPHIN=/path/to/dolphin-emu       # the scripting build
 export ORACLE_DISC=/path/to/lab/disc/image.iso
 cd /path/to/this/repo
 
