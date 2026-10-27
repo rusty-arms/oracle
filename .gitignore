@@ -1,2 +1,37 @@
+# Retail data must never be committed. Same extensions as scripts/check_no_retail.py, plus *.raw.
+*.iso
+*.gcm
+*.rvz
+*.ciso
+*.wbfs
+*.nkit
+*.dol
+*.rel
+*.mst
+*.bik
+*.gci
+*.sav
+*.dtm
+*.raw
+
+# The lab and anything captured or dumped from the game.
+lab/
+ma-lab/
+captures/
+dumps/
+
+# Never commit the local handover file.
+HANDOVER.md
+
+# Local Claude Code settings and Python caches.
+.claude/settings.local.json
 __pycache__/
-*.pyc
+.venv/
+.ruff_cache/
+
+# Rig output: screenshots, Dolphin savestates, traces and run records stay in the lab.
+*.png
+*.s[0-9][0-9]
+trace.csv
+run.json
+dolphin.log

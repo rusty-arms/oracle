@@ -1,0 +1,7 @@
+# The admins team reviews everything. The rig is a verifier, so oracle/ and
+# tests/ are listed explicitly with .github/: changes there need an admin's
+# approval and must never be approved by an agent.
+*          @rusty-arms/admins
+/.github/  @rusty-arms/admins
+/oracle/   @rusty-arms/admins
+/tests/    @rusty-arms/admins
