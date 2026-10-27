@@ -31,6 +31,7 @@ SCRIPT = os.path.join(PACKAGE_DIR, "oracle", "dolphin_script.py")
 
 # Passed to Dolphin as -C overrides. Single-core emulation and a fixed clock make runs repeatable;
 # the rest stop prompts and focus changes from interfering, and match the brief's 1x resolution.
+# The scripting log carries the rig script's own output and Python errors into dolphin.log.
 SETTINGS = (
     "Dolphin.Core.CPUThread=False",
     "Dolphin.Core.EnableCustomRTC=True",
@@ -41,6 +42,7 @@ SETTINGS = (
     "Dolphin.Analytics.PermissionAsked=True",
     "Dolphin.Analytics.Enabled=False",
     "Graphics.Settings.InternalResolution=1",
+    "Logger.Logs.Scripting=True",
 )
 
 
@@ -74,6 +76,16 @@ def build_command(
     return command + extra
 
 
+def dolphin_env(config_path: str) -> dict[str, str]:
+    env = dict(os.environ, ORACLE_RUN=config_path)
+    # Under native Wayland, Dolphin's video backends hang while booting, before the first frame.
+    # Run it through X11 (XWayland), as Dolphin's own packages do. Desktops such as COSMIC set
+    # this variable for every program, so override it rather than only fill it in.
+    if sys.platform.startswith("linux"):
+        env["QT_QPA_PLATFORM"] = "xcb"
+    return env
+
+
 def run_once(args: argparse.Namespace, out_dir: str, shots_dir: str) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="oracle-") as temp:
         user_dir = os.path.join(temp, "dolphin-user")
@@ -93,7 +105,7 @@ def run_once(args: argparse.Namespace, out_dir: str, shots_dir: str) -> dict[str
         with open(config_path, "w", encoding="utf-8") as handle:
             json.dump(config, handle)
         command = build_command(args.dolphin, user_dir, args.disc, args.state, args.dolphin_arg)
-        env = dict(os.environ, ORACLE_RUN=config_path)
+        env = dolphin_env(config_path)
         started = time.time()
         log_path = os.path.join(out_dir, "dolphin.log")
         os.makedirs(out_dir, exist_ok=True)
@@ -105,6 +117,7 @@ def run_once(args: argparse.Namespace, out_dir: str, shots_dir: str) -> dict[str
                 _stop(process)
         result["seconds"] = round(time.time() - started, 1)
         result["command"] = command
+        result["qt_platform"] = env.get("QT_QPA_PLATFORM")
         return result
 
 

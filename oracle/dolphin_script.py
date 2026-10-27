@@ -36,20 +36,28 @@ if _config.get("watch"):
         _watches = watch.parse(_handle.read())
 
 _recorder = Recorder(_plan, _watches, _config["out_dir"], _config["shots_dir"], _read, _set_pad)
+_stopped = False
 
 
 def _stop():
-    event.on_frameadvance(None)
-    event.on_framedrawn(None)
-    emulation.pause()
+    # The scripting fork can't unregister a callback (it rejects None), so once the run is over
+    # the callbacks stay registered and do nothing. Pause once; the launcher then stops Dolphin.
+    global _stopped
+    if not _stopped:
+        _stopped = True
+        emulation.pause()
 
 
 def _on_frame():
+    if _stopped:
+        return
     if _recorder.on_frame():
         _stop()
 
 
 def _on_drawn(width, height, data):
+    if _stopped:
+        return
     _recorder.on_drawn(width, height, data)
     if _recorder.done:
         _stop()
