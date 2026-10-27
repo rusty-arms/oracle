@@ -1,0 +1,5 @@
+# Generic GameCube watches from public hardware documentation, true for any disc.
+# After boot, the start of main memory holds a copy of the disc header.
+disc_id_word   0x80000000  u32   # first four characters of the game code, as a number
+maker_code     0x80000004  u16   # two-character maker code, as a number
+memory_size    0x80000028  u32   # main memory size reported to the game

@@ -1,0 +1,4 @@
+# Smoke test: boot the disc, touch nothing for ten seconds, take two screenshots.
+# Proves that replay, RAM reads and screenshots work. Needs no knowledge of the game.
+frames 600
+shot 300 599

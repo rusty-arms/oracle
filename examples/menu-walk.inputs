@@ -1,0 +1,11 @@
+# Made-up example showing the syntax. It is not a route through any real menu.
+frames 900
+every 2                  # trace every other frame
+shot 0 450 899
+
+0-299                    # neutral while the disc boots
+300 Start                # one frame of Start
+360-369 Down
+420 A
+480-539 StickX=-0.5 TriggerRight=1.0
+600-899 StickY=1.0 B

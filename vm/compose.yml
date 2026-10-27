@@ -1,0 +1,33 @@
+# A local Windows VM for the oracle rig, for Linux lab PCs. The Python-scripting
+# Dolphin build ships for Windows only. Uses dockurr/windows (MIT), which runs
+# Windows under KVM inside a container. See vm/README.md.
+#
+# Run from this folder after setting LAB and VM_STORAGE (see README):
+#   docker compose up -d
+services:
+  windows:
+    image: dockurr/windows:6.06
+    container_name: rusty-arms-windows
+    environment:
+      VERSION: "11"
+      CPU_CORES: "4"
+      RAM_SIZE: "8G"
+      DISK_SIZE: "64G"
+    devices:
+      - /dev/kvm
+      - /dev/net/tun
+    cap_add:
+      - NET_ADMIN
+    # Bound to this PC only: the VM is never reachable from the network.
+    ports:
+      - 127.0.0.1:8006:8006   # web viewer, for the Windows install
+      - 127.0.0.1:3389:3389   # remote desktop
+      - 127.0.0.1:2222:22     # SSH, so a lab session can start replays
+    volumes:
+      # The VM's disk can end up holding data derived from the disc, such as
+      # Dolphin caches, so keep it out of every repo and cloud-synced folder.
+      - ${VM_STORAGE:?set VM_STORAGE}:/storage
+      # The lab appears inside Windows as drive Z:.
+      - ${LAB:?set LAB}:/shared
+    restart: unless-stopped
+    stop_grace_period: 2m

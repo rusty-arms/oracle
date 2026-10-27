@@ -1,0 +1,3 @@
+# The rig runs inside Dolphin's embedded Python, so keep it compatible with 3.8.
+line-length = 100
+target-version = "py38"
