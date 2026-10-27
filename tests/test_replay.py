@@ -71,6 +71,10 @@ class ReplayTest(unittest.TestCase):
         with open(self.path("out/trace.csv"), newline="") as handle:
             return list(csv.reader(handle))
 
+    def assert_clean_log(self):
+        with open(self.path("out/dolphin.log")) as handle:
+            self.assertNotIn("Traceback", handle.read())
+
     def run_json(self):
         with open(self.path("out/run.json")) as handle:
             return json.load(handle)
@@ -90,6 +94,7 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(record["host"]["inputs"]["file"], "test.inputs")
         self.assertIn("Dolphin.Core.CPUThread=False", record["host"]["settings"])
         self.assertFalse(os.path.exists(self.path("out/result.json")))
+        self.assert_clean_log()
 
     def test_every_and_screenshots(self):
         code, _, err = self.run_replay(
@@ -102,6 +107,14 @@ class ReplayTest(unittest.TestCase):
         )
         shot = self.run_json()["shots"]["9"]
         self.assertEqual((shot["width"], shot["height"]), (4, 2))
+        self.assert_clean_log()
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "the override is for Linux only")
+    def test_forces_x11_on_linux(self):
+        with mock.patch.dict(os.environ, {"QT_QPA_PLATFORM": "wayland;xcb"}):
+            env = replay.dolphin_env("run.json")
+        self.assertEqual(env["QT_QPA_PLATFORM"], "xcb")
+        self.assertEqual(env["ORACLE_RUN"], "run.json")
 
     def test_repeat_identical(self):
         code, out, err = self.run_replay(

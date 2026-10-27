@@ -21,7 +21,7 @@ The first build takes roughly 30 to 60 minutes. To build another release, set `T
 
 The build installs nothing system-wide apart from the `apt` packages, and leaves any Dolphin you already have alone. Keep it outside the lab: it holds no game data.
 
-**Untested:** nobody publishes a Linux build of this fork, and this script hasn't been run yet. If the build fails, send the last 50 lines of its output, which hold no game data, and it will be fixed. If it can't be made to work, [`vm/`](../vm/README.md) runs the Windows build in a local VM instead, more slowly.
+The script built the fork on Pop!_OS 24.04 on 2026-10-27. If the build fails, send the last 50 lines of its output, which hold no game data, and it will be fixed. If it can't be made to work, [`vm/`](../vm/README.md) runs the Windows build in a local VM instead, more slowly.
 
 ## Check it
 
@@ -30,6 +30,14 @@ The build installs nothing system-wide apart from the `apt` packages, and leaves
 ```
 
 Dolphin should open. **View → Scripting** should exist; that menu is the fork's.
+
+## Wayland
+
+On a Wayland desktop, such as COSMIC on Pop!_OS 24.04, this build opens its window but never runs a frame: the video backends hang while booting. The rig avoids this by running Dolphin through X11 (XWayland) with `QT_QPA_PLATFORM=xcb`. To start the build by hand, do the same:
+
+```sh
+QT_QPA_PLATFORM=xcb ~/Develop/rusty-arms/dolphin-scripting/build/Binaries/dolphin-emu
+```
 
 ## Run the smoke test
 

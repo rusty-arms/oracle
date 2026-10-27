@@ -9,6 +9,9 @@ runs the --script, then emulates frames of a made-up "game":
 
 Each drawn frame is 4x2 RGB pixels derived from the frame number. FAKE_DOLPHIN_MODE changes its
 behaviour: "random" makes the A counter jitter, "crash" exits early, "hang" never runs the script.
+
+Like the scripting fork, it adds every callback it is given, rejects None (the fork has no way to
+unregister one), and prints the traceback of a callback that raises and carries on.
 """
 
 import argparse
@@ -18,6 +21,7 @@ import runpy
 import struct
 import sys
 import time
+import traceback
 import types
 
 MEM1 = 0x80000000
@@ -54,6 +58,25 @@ FORMATS = {
 }
 
 
+def register(callbacks):
+    def on_event(callback):
+        if callback is None:
+            raise ValueError("event callback must not be None")
+        if not callable(callback):
+            raise TypeError("event callback must be callable")
+        callbacks.append(callback)
+
+    return on_event
+
+
+def fire(callbacks, *args):
+    for callback in callbacks:
+        try:
+            callback(*args)
+        except Exception:  # noqa: BLE001  the fork prints the error and carries on
+            traceback.print_exc()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch", action="store_true")
@@ -74,7 +97,8 @@ def main():
     ram.write("I", MEM1 + 0x28, 0x01800000)
     ram.write("I", 0x80400008, 0x80400010)
     ram.write("I", 0x80400014, 7)
-    state = {"pad": {}, "paused": False, "frame": None, "drawn": None}
+    state = {"pad": {}, "paused": False}
+    on_frame, on_drawn = [], []
 
     dolphin = types.ModuleType("dolphin")
     memory = types.ModuleType("dolphin.memory")
@@ -85,8 +109,8 @@ def main():
     emulation = types.ModuleType("dolphin.emulation")
     emulation.pause = lambda: state.__setitem__("paused", True)
     event = types.ModuleType("dolphin.event")
-    event.on_frameadvance = lambda callback: state.__setitem__("frame", callback)
-    event.on_framedrawn = lambda callback: state.__setitem__("drawn", callback)
+    event.on_frameadvance = register(on_frame)
+    event.on_framedrawn = register(on_drawn)
     for module in (memory, controller, emulation, event):
         setattr(dolphin, module.__name__.split(".")[1], module)
         sys.modules[module.__name__] = module
@@ -104,10 +128,8 @@ def main():
             jitter = random.randint(0, 1) if mode == "random" else 0
             ram.write("I", 0x80400000, ram.read("I", 0x80400000) + 1 + jitter)
         ram.write("f", 0x80400004, ram.read("f", 0x80400004) + pad.get("StickX", 0.0))
-        if state["frame"]:
-            state["frame"]()
-        if state["drawn"]:
-            state["drawn"](4, 2, bytes((frame + i) % 256 for i in range(4 * 2 * 3)))
+        fire(on_frame)
+        fire(on_drawn, 4, 2, bytes((frame + i) % 256 for i in range(4 * 2 * 3)))
     time.sleep(600)  # like Dolphin, stay open while paused until the launcher stops it
 
 
