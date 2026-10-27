@@ -8,13 +8,14 @@ runs the --script, then emulates frames of a made-up "game":
 - 0x80400008 (u32) holds a pointer to 0x80400010, where 0x80400014 (u32) is 7.
 
 Each drawn frame is 4x2 RGB pixels derived from the frame number. FAKE_DOLPHIN_MODE changes its
-behaviour: "random" makes the A counter jitter, "crash" exits early, "hang" never runs the script.
+behaviour: "random" makes the A counter jitter, "crash" exits early, "trap" dies of SIGILL after logging a line, "hang" never runs the script.
 """
 
 import argparse
 import os
 import random
 import runpy
+import signal
 import struct
 import sys
 import time
@@ -99,6 +100,9 @@ def main():
             break
         if mode == "crash" and frame == 5:
             sys.exit(3)
+        if mode == "trap" and frame == 5:
+            print("fake dolphin: about to trap", flush=True)
+            signal.raise_signal(signal.SIGILL)
         pad = state["pad"]
         if pad.get("A"):
             jitter = random.randint(0, 1) if mode == "random" else 0
